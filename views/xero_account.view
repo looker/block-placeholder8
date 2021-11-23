@@ -1,0 +1,122 @@
+view: xero_account {
+  sql_table_name: @{XERO_SCHEMA}."ACCOUNTS"
+    ;;
+
+  dimension_group: _fivetran_synced {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."_FIVETRAN_SYNCED" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: account_id {
+    type: string
+    sql: ${TABLE}."ACCOUNT_ID" ;;
+  }
+
+  dimension: bank_account_number {
+    type: string
+    sql: ${TABLE}."BANK_ACCOUNT_NUMBER" ;;
+  }
+
+  dimension: bank_account_type {
+    type: string
+    sql: ${TABLE}."BANK_ACCOUNT_TYPE" ;;
+  }
+
+  dimension: class {
+    type: string
+    sql: ${TABLE}."CLASS" ;;
+  }
+
+  dimension: code {
+    type: string
+    sql: ${TABLE}."CODE" ;;
+  }
+
+  dimension: currency_code {
+    type: string
+    sql: ${TABLE}."CURRENCY_CODE" ;;
+  }
+
+  dimension: description {
+    type: string
+    sql: ${TABLE}."DESCRIPTION" ;;
+  }
+
+  dimension: enable_payments_to_account {
+    type: yesno
+    sql: ${TABLE}."ENABLE_PAYMENTS_TO_ACCOUNT" ;;
+  }
+
+  dimension: has_attachments {
+    type: yesno
+    sql: ${TABLE}."HAS_ATTACHMENTS" ;;
+  }
+
+  dimension: name {
+    type: string
+    sql: ${TABLE}."NAME" ;;
+  }
+
+  dimension: reporting_code {
+    type: string
+    sql: ${TABLE}."REPORTING_CODE" ;;
+  }
+
+  dimension: reporting_code_name {
+    type: string
+    sql: ${TABLE}."REPORTING_CODE_NAME" ;;
+  }
+
+  dimension: show_in_expense_claims {
+    type: yesno
+    sql: ${TABLE}."SHOW_IN_EXPENSE_CLAIMS" ;;
+  }
+
+  dimension: status {
+    type: string
+    sql: ${TABLE}."STATUS" ;;
+  }
+
+  dimension: system_account {
+    type: string
+    sql: ${TABLE}."SYSTEM_ACCOUNT" ;;
+  }
+
+  dimension: tax_type {
+    type: string
+    sql: ${TABLE}."TAX_TYPE" ;;
+  }
+
+  dimension: type {
+    type: string
+    sql: ${TABLE}."TYPE" ;;
+  }
+
+  dimension_group: updated_date_utc {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."UPDATED_DATE_UTC" AS TIMESTAMP_NTZ) ;;
+  }
+
+  measure: count {
+    type: count
+    drill_fields: [name, reporting_code_name]
+  }
+}

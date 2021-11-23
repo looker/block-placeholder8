@@ -1,0 +1,3 @@
+include: "/views/xero_contact.view"
+
+explore: xero_contact {}

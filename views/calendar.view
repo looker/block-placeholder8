@@ -1,0 +1,35 @@
+view: calendar {
+  derived_table: {
+    sql:
+      --Generate list of 100 consecutive dates (to the FUTURE), beginning by fixed date (2016-01-01)
+          SELECT
+              DATEADD(
+                      DAY,                                        /* simple DATE math */
+                      "seq"."seq",                                /* adding generated numbers from fixed date */
+                      "start_date"
+                      ) :: DATE AS "DATE"
+          FROM (
+                  SELECT '2016-01-01' AS "start_date"             /* FIXED DATE */
+               ) "t1"
+          LEFT JOIN (
+                      SELECT seq2() AS "seq"                      /* SUBQUERY #1 */
+                      FROM TABLE(generator(rowcount => 10000))    /* - produce 100 rows table with {0:99} numbers */
+                    ) "seq"
+          ORDER BY 1;;
+  }
+
+  dimension_group: date {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."DATE" ;;
+  }
+}

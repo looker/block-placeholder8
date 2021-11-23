@@ -1,0 +1,240 @@
+view: xero_invoice_line_items {
+  sql_table_name: @{XERO_SCHEMA}."INVOICE_LINE_ITEMS"
+    ;;
+
+  dimension_group: _fivetran_synced {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."_FIVETRAN_SYNCED" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: account_class {
+    type: string
+    sql: ${TABLE}."ACCOUNT_CLASS" ;;
+  }
+
+  dimension: account_code {
+    type: string
+    sql: ${TABLE}."ACCOUNT_CODE" ;;
+  }
+
+  dimension: account_id {
+    type: string
+    sql: ${TABLE}."ACCOUNT_ID" ;;
+  }
+
+  dimension: account_name {
+    type: string
+    sql: ${TABLE}."ACCOUNT_NAME" ;;
+  }
+
+  dimension: account_type {
+    type: string
+    sql: ${TABLE}."ACCOUNT_TYPE" ;;
+  }
+
+  dimension: contact_name {
+    type: string
+    sql: ${TABLE}."CONTACT_NAME" ;;
+  }
+
+  dimension: currency_code {
+    type: string
+    sql: ${TABLE}."CURRENCY_CODE" ;;
+  }
+
+  dimension: currency_rate {
+    type: number
+    sql: ${TABLE}."CURRENCY_RATE" ;;
+  }
+
+  dimension: description {
+    type: string
+    sql: ${TABLE}."DESCRIPTION" ;;
+  }
+
+  dimension: discount_entered_as_percent {
+    type: yesno
+    sql: ${TABLE}."DISCOUNT_ENTERED_AS_PERCENT" ;;
+  }
+
+  dimension: discount_rate {
+    type: number
+    sql: ${TABLE}."DISCOUNT_RATE" ;;
+  }
+
+  dimension_group: due {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."DUE_DATE" ;;
+  }
+
+  dimension_group: expected_payment {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."EXPECTED_PAYMENT_DATE" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension_group: fully_paid_on {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."FULLY_PAID_ON_DATE" ;;
+  }
+
+  dimension_group: invoice {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."INVOICE_DATE" ;;
+  }
+
+  dimension: invoice_id {
+    type: string
+    sql: ${TABLE}."INVOICE_ID" ;;
+  }
+
+  dimension: invoice_number {
+    type: string
+    sql: ${TABLE}."INVOICE_NUMBER" ;;
+  }
+
+  dimension: invoice_reference {
+    type: string
+    sql: ${TABLE}."INVOICE_REFERENCE" ;;
+  }
+
+  dimension: invoice_status {
+    type: string
+    sql: ${TABLE}."INVOICE_STATUS" ;;
+  }
+
+  dimension: item_code {
+    type: string
+    sql: ${TABLE}."ITEM_CODE" ;;
+  }
+
+  dimension: line_amount {
+    type: number
+    sql: ${TABLE}."LINE_AMOUNT" ;;
+  }
+
+  dimension: line_item_id {
+    type: string
+    sql: ${TABLE}."LINE_ITEM_ID" ;;
+  }
+
+  dimension_group: planned_payment {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."PLANNED_PAYMENT_DATE" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: quantity {
+    type: number
+    sql: ${TABLE}."QUANTITY" ;;
+  }
+
+  dimension: sent_to_contact {
+    type: yesno
+    sql: ${TABLE}."SENT_TO_CONTACT" ;;
+  }
+
+  dimension: tax_amount {
+    type: number
+    sql: ${TABLE}."TAX_AMOUNT" ;;
+  }
+
+  dimension: tax_type {
+    type: string
+    sql: ${TABLE}."TAX_TYPE" ;;
+  }
+
+  dimension: type {
+    type: string
+    sql: ${TABLE}."TYPE" ;;
+  }
+
+  dimension: unit_amount {
+    type: number
+    sql: ${TABLE}."UNIT_AMOUNT" ;;
+  }
+
+  dimension_group: updated_date_utc {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."UPDATED_DATE_UTC" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: url {
+    type: string
+    sql: ${TABLE}."URL" ;;
+  }
+
+  dimension: validation_errors {
+    type: string
+    sql: ${TABLE}."VALIDATION_ERRORS" ;;
+  }
+
+  measure: count {
+    type: count
+    drill_fields: [contact_name, account_name]
+  }
+}

@@ -1,0 +1,10 @@
+include: "/views/xero_invoice.view"
+include: "/views/xero_contact.view"
+
+explore:  xero_invoice {
+  join: xero_contact {
+    type: left_outer
+    sql_on: ${xero_invoice.contact_id} = ${xero_contact.contact_id} ;;
+    relationship: many_to_one
+  }
+}

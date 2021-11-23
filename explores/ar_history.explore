@@ -1,0 +1,23 @@
+include: "/views/ar_history.view"
+include: "/views/calendar.view"
+include: "/views/xero_contact.view"
+
+explore: ar_history {
+  label: "Account Receivable History"
+
+  join: calendar {
+    type: left_outer
+    sql_on: ${ar_history.created_date} < ${calendar.date_date}
+          AND (${ar_history.fully_paid_on_date} > ${calendar.date_date} OR ${ar_history.fully_paid_on_date} IS NULL)
+          AND ${calendar.date_date} = LAST_DAY(${calendar.date_date}::DATE)
+          AND ${ar_history.sent_to_contact};;
+    relationship: many_to_one
+  }
+
+  join: xero_contact {
+    type: left_outer
+    sql_on: ${ar_history.contact_id} = ${xero_contact.contact_id} ;;
+    relationship: many_to_one
+  }
+
+}

@@ -1,0 +1,219 @@
+view: xero_contact {
+  sql_table_name: @{XERO_SCHEMA}."CONTACT"
+    ;;
+
+  dimension: _fivetran_deleted {
+    type: yesno
+    sql: ${TABLE}."_FIVETRAN_DELETED" ;;
+    hidden: yes
+  }
+
+  dimension_group: _fivetran_synced {
+    type: time
+    hidden: yes
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."_FIVETRAN_SYNCED" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: account_number {
+    type: string
+    sql: ${TABLE}."ACCOUNT_NUMBER" ;;
+  }
+
+  dimension: accounts_payable_tax_type {
+    type: string
+    sql: ${TABLE}."ACCOUNTS_PAYABLE_TAX_TYPE" ;;
+  }
+
+  dimension: accounts_receivable_tax_type {
+    type: string
+    sql: ${TABLE}."ACCOUNTS_RECEIVABLE_TAX_TYPE" ;;
+  }
+
+  dimension: balances_accounts_payable_outstanding {
+    type: number
+    sql: ${TABLE}."BALANCES_ACCOUNTS_PAYABLE_OUTSTANDING" ;;
+  }
+
+  dimension: balances_accounts_payable_overdue {
+    type: number
+    sql: ${TABLE}."BALANCES_ACCOUNTS_PAYABLE_OVERDUE" ;;
+  }
+
+  dimension: balances_accounts_receivable_outstanding {
+    type: number
+    sql: ${TABLE}."BALANCES_ACCOUNTS_RECEIVABLE_OUTSTANDING" ;;
+  }
+
+  dimension: balances_accounts_receivable_overdue {
+    type: number
+    sql: ${TABLE}."BALANCES_ACCOUNTS_RECEIVABLE_OVERDUE" ;;
+  }
+
+  dimension: bank_account_details {
+    type: string
+    sql: ${TABLE}."BANK_ACCOUNT_DETAILS" ;;
+  }
+
+  dimension: batch_payments_bank_account_name {
+    type: string
+    sql: ${TABLE}."BATCH_PAYMENTS_BANK_ACCOUNT_NAME" ;;
+  }
+
+  dimension: batch_payments_bank_account_number {
+    type: string
+    sql: ${TABLE}."BATCH_PAYMENTS_BANK_ACCOUNT_NUMBER" ;;
+  }
+
+  dimension: batch_payments_code {
+    type: string
+    sql: ${TABLE}."BATCH_PAYMENTS_CODE" ;;
+  }
+
+  dimension: batch_payments_details {
+    type: string
+    sql: ${TABLE}."BATCH_PAYMENTS_DETAILS" ;;
+  }
+
+  dimension: batch_payments_reference {
+    type: string
+    sql: ${TABLE}."BATCH_PAYMENTS_REFERENCE" ;;
+  }
+
+  dimension: branding_theme_id {
+    type: string
+    sql: ${TABLE}."BRANDING_THEME_ID" ;;
+  }
+
+  dimension: contact_id {
+    type: string
+    sql: ${TABLE}."CONTACT_ID" ;;
+  }
+
+  dimension: contact_number {
+    type: string
+    sql: ${TABLE}."CONTACT_NUMBER" ;;
+  }
+
+  dimension: contact_status {
+    type: string
+    sql: ${TABLE}."CONTACT_STATUS" ;;
+  }
+
+  dimension: contact_url {
+    hidden: yes
+    sql: 'https://go.xero.com/Contacts/View/'||${contact_id} ;;
+  }
+
+  dimension: contact {
+    type: string
+    sql: ${name} ;;
+    html: <a href={{contact_url}} target="_blank"><font color="blue">{{ value }}</font></a> ;;
+  }
+  dimension: default_currency {
+    type: string
+    sql: ${TABLE}."DEFAULT_CURRENCY" ;;
+  }
+
+  dimension: discount {
+    type: number
+    sql: ${TABLE}."DISCOUNT" ;;
+  }
+
+  dimension: email_address {
+    type: string
+    sql: ${TABLE}."EMAIL_ADDRESS" ;;
+  }
+
+  dimension: first_name {
+    type: string
+    sql: ${TABLE}."FIRST_NAME" ;;
+  }
+
+  dimension: has_attachments {
+    type: yesno
+    sql: ${TABLE}."HAS_ATTACHMENTS" ;;
+  }
+
+  dimension: has_validation_errors {
+    type: yesno
+    sql: ${TABLE}."HAS_VALIDATION_ERRORS" ;;
+  }
+
+  dimension: is_customer {
+    type: yesno
+    sql: ${TABLE}."IS_CUSTOMER" ;;
+  }
+
+  dimension: is_supplier {
+    type: yesno
+    sql: ${TABLE}."IS_SUPPLIER" ;;
+  }
+
+  dimension: last_name {
+    type: string
+    sql: ${TABLE}."LAST_NAME" ;;
+  }
+
+  dimension: name {
+    type: string
+    sql: ${TABLE}."NAME" ;;
+  }
+
+  dimension: purchases_default_account_code {
+    type: string
+    sql: ${TABLE}."PURCHASES_DEFAULT_ACCOUNT_CODE" ;;
+  }
+
+  dimension: sales_default_account_code {
+    type: string
+    sql: ${TABLE}."SALES_DEFAULT_ACCOUNT_CODE" ;;
+  }
+
+  dimension: skype_user_name {
+    type: string
+    sql: ${TABLE}."SKYPE_USER_NAME" ;;
+  }
+
+  dimension: tax_number {
+    type: string
+    sql: ${TABLE}."TAX_NUMBER" ;;
+  }
+
+  dimension_group: updated_date_utc {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."UPDATED_DATE_UTC" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: website {
+    type: string
+    sql: ${TABLE}."WEBSITE" ;;
+  }
+
+  dimension: xero_network_key {
+    type: string
+    sql: ${TABLE}."XERO_NETWORK_KEY" ;;
+  }
+
+  measure: count {
+    type: count
+    drill_fields: [last_name, batch_payments_bank_account_name, first_name, skype_user_name, name]
+  }
+}

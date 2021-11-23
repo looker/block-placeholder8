@@ -1,0 +1,5 @@
+include: "/views/xero_general_ledger.view"
+
+explore: xero_general_ledger {
+  label: "Xero General Ledger"
+}

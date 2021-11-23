@@ -1,0 +1,357 @@
+view: xero_invoice {
+  sql_table_name: @{XERO_SCHEMA}."INVOICE"
+    ;;
+
+  dimension_group: _fivetran_synced {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    hidden: yes
+    sql: CAST(${TABLE}."_FIVETRAN_SYNCED" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: amount_credited {
+    type: number
+    sql: ${TABLE}."AMOUNT_CREDITED" ;;
+  }
+
+  dimension: is_paid {
+    type: yesno
+    sql: ${fully_paid_on_date} is not null;;
+
+  }
+
+
+  dimension: branding_theme_id {
+    type: string
+    sql: ${TABLE}."BRANDING_THEME_ID" ;;
+  }
+
+  dimension: cisdeduction {
+    type: number
+    sql: ${TABLE}."CISDEDUCTION" ;;
+  }
+
+  dimension: contact_id {
+    type: string
+    sql: ${TABLE}."CONTACT_ID" ;;
+  }
+
+  dimension: currency_code {
+    type: string
+    sql: ${TABLE}."CURRENCY_CODE" ;;
+  }
+
+  dimension: currency_rate {
+    type: number
+    sql: ${TABLE}."CURRENCY_RATE" ;;
+  }
+
+  dimension_group: created {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."DATE" ;;
+  }
+
+  dimension_group: due {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."DUE_DATE" ;;
+  }
+
+  dimension_group: expected_payment {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."EXPECTED_PAYMENT_DATE" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension_group: fully_paid_on {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."FULLY_PAID_ON_DATE" ;;
+  }
+
+  dimension: has_attachments {
+    type: yesno
+    sql: ${TABLE}."HAS_ATTACHMENTS" ;;
+  }
+
+  dimension: has_errors {
+    type: yesno
+    sql: ${TABLE}."HAS_ERRORS" ;;
+  }
+
+  dimension: invoice_id {
+    type: string
+    sql: ${TABLE}."INVOICE_ID" ;;
+  }
+
+
+  dimension:  invoice_url {
+    type: string
+    hidden: yes
+    sql: IFF(${sent_to_contact} ,'https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID='||${invoice_id},'https://go.xero.com/AccountsPayable/View.aspx?InvoiceID='||${invoice_id}) ;;
+  }
+
+
+  dimension: invoice_number {
+    type: string
+    sql: ${TABLE}."INVOICE_NUMBER" ;;
+    html: <a href={{invoice_url}} target="_blank"><font color="blue">{{ value }}</font></a> ;;
+
+  }
+
+  dimension: is_discounted {
+    type: yesno
+    sql: ${TABLE}."IS_DISCOUNTED" ;;
+  }
+
+  dimension: line_amount_types {
+    type: string
+    sql: ${TABLE}."LINE_AMOUNT_TYPES" ;;
+  }
+
+  dimension_group: planned_payment {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."PLANNED_PAYMENT_DATE" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: reference {
+    type: string
+    sql: ${TABLE}."REFERENCE" ;;
+  }
+
+  dimension: sent_to_contact {
+    type: yesno
+    sql: ${TABLE}."SENT_TO_CONTACT" ;;
+  }
+
+  dimension: status {
+    type: string
+    sql: ${TABLE}."STATUS" ;;
+  }
+
+
+
+  dimension: type {
+    type: string
+    sql: ${TABLE}."TYPE" ;;
+  }
+
+  dimension_group: updated_date_utc {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."UPDATED_DATE_UTC" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: url {
+    type: string
+    sql: ${TABLE}."URL" ;;
+  }
+
+  dimension: total_amount_dimension {
+    type: number
+    sql: ${TABLE}."TOTAL";;
+    hidden: yes
+  }
+  dimension: current_payment_offset {
+    hidden:  yes
+    type: number
+    sql: datediff('day', ${due_date}, current_date) ;;
+  }
+
+
+  dimension: past_payment_offset_dimension {
+    hidden:  yes
+    type: number
+    sql: datediff('day', ${due_date},${fully_paid_on_date}) ;;
+  }
+
+  dimension: payment_status_group {
+    case: {
+      when: {
+        sql: ${current_payment_offset} <= -7;;
+        label: "Current"
+      }
+      when: {
+        sql: ${current_payment_offset} > -7 AND ${current_payment_offset} <= 1;;
+        label: "Coming Up"
+      }
+      when: {
+        sql: ${current_payment_offset} > 1 AND ${current_payment_offset} <= 30;;
+        label: "Past Due - <30"
+      }
+      when: {
+        sql: ${current_payment_offset} > 30 AND ${current_payment_offset} <= 60;;
+        label: "Past Due - 30+"
+      }
+      when: {
+        sql: ${current_payment_offset} > 60;;
+        label: "Past Due - 60+"
+      }
+      else:"Unknown"
+    }
+  }
+
+
+  measure: amount_due {
+    type: number
+    value_format_name: usd_0
+    sql: SUM(${TABLE}."AMOUNT_DUE"/nullif(${currency_rate},0));;
+  }
+
+  measure: amount_paid {
+    type: number
+    value_format_name: usd_0
+    sql: SUM(${TABLE}."AMOUNT_PAID"/nullif(${currency_rate},0)) ;;
+  }
+
+
+  measure: sub_total {
+    type: number
+    value_format_name: usd_0
+    sql: SUM(${TABLE}."SUB_TOTAL"/nullif(${currency_rate},0));;
+  }
+
+  measure: total {
+    type: number
+    value_format_name: usd_0
+    sql: SUM(${total_amount_dimension}/nullif(${currency_rate},0));;
+  }
+
+  measure: total_tax {
+    type: number
+    value_format_name: usd_0
+    sql: SUM(${TABLE}."TOTAL_TAX"/nullif(${currency_rate},0)) ;;
+  }
+
+  measure: total_amount_paid {
+    type: sum
+    sql: ${total_amount_dimension}/nullif(${currency_rate},0) ;;
+    filters: {
+      field: is_paid
+      value: "true"
+    }
+    value_format_name: usd
+    drill_fields: [invoice_list*]
+  }
+
+  measure: open_invoice_count {
+    type: count
+    filters: {
+      field: is_paid
+      value: "false"
+    }
+    drill_fields: [invoice_list*]
+  }
+
+  measure: total_amount_open{
+    type: sum
+    sql: ${total_amount_dimension}/nullif(${currency_rate},0) ;;
+    filters: {
+      field: is_paid
+      value: "false"
+    }
+    value_format_name: usd
+    drill_fields: [invoice_list*]
+  }
+
+  measure: past_payment_delay_average {
+    type: average
+    sql: ${past_payment_offset_dimension} ;;
+    filters: {
+      field: is_paid
+      value: "true"
+    }
+    precision: 0
+    value_format: "##0 \D\a\y\s"
+  }
+
+  measure: current_payment_delay_average {
+    type: average
+    sql: ${current_payment_offset} ;;
+    filters: {
+      field: is_paid
+      value: "false"
+    }
+    precision: 0
+    value_format: "##0 \D\a\y\s"
+  }
+
+  measure: balance_amount {
+    type: sum
+    sql: IFF(${sent_to_contact},${total_amount_dimension},${total_amount_dimension}*-1)/nullif(${currency_rate},0) ;;
+    value_format: "$# ### ##0.00; ($# ### ##0.00)"
+    drill_fields: [invoice_list*]
+  }
+
+
+  measure: count {
+    type: count
+    drill_fields: []
+  }
+
+  set: invoice_list {
+    fields: [invoice_number,contact.contact,created_date,due_date,is_paid,total]
+  }
+
+}

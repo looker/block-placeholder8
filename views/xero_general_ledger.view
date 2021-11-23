@@ -1,0 +1,237 @@
+view: xero_general_ledger {
+derived_table: {
+  sql:    SELECT
+    a.*,
+    COALESCE(
+            invoices.contact_id,
+            bank_transaction.contact_id,
+            credit_notes.contact_id
+        ) AS contact_id,
+    contact.name AS contact_name
+    FROM
+    (SELECT
+        journals.journal_id,
+        journals.created_date_utc,
+        journals.journal_date,
+        journals.journal_number,
+        journals.reference,
+        journals.source_id,
+        journals.source_type,
+        journal_lines.journal_line_id,
+        journal_lines.account_code,
+        journal_lines.account_id,
+        journal_lines.account_name,
+        journal_lines.account_type,
+        journal_lines.description,
+        journal_lines.gross_amount,
+        journal_lines.net_amount,
+        journal_lines.tax_amount,
+        journal_lines.tax_name,
+        journal_lines.tax_type,
+        accounts.class,
+        CASE WHEN journals.source_type IN ('ACCPAY', 'ACCREC') THEN journals.source_id END AS invoice_id,
+        CASE WHEN journals.source_type IN ('CASHREC','CASHPAID') THEN journals.source_id END AS bank_transaction_id,
+        CASE WHEN journals.source_type IN ('TRANSFER') THEN journals.source_id END AS bank_transfer_id,
+        CASE WHEN journals.source_type IN ('MANJOURNAL') THEN journals.source_id END AS manual_journal_id,
+        CASE WHEN journals.source_type IN ('APPREPAYMENT', 'APOVERPAYMENT', 'ACCPAYPAYMENT', 'ACCRECPAYMENT', 'ARCREDITPAYMENT', 'APCREDITPAYMENT') THEN journals.source_id END AS payment_id,
+        CASE WHEN journals.source_type IN ('ACCPAYCREDIT','ACCRECCREDIT') THEN journals.source_id END AS credit_note_id
+    FROM @{XERO_SCHEMA}."JOURNAL" journals
+    LEFT JOIN @{XERO_SCHEMA}."JOURNAL_LINE" journal_lines
+        ON journals.journal_id = journal_lines.journal_id
+    LEFT JOIN @{XERO_SCHEMA}."ACCOUNT" accounts
+        ON accounts.account_id = journal_lines.account_id) a
+    LEFT JOIN @{XERO_SCHEMA}."INVOICE" invoices
+        ON  invoices.invoice_id=a.invoice_id
+    LEFT JOIN @{XERO_SCHEMA}."BANK_TRANSACTION" bank_transaction
+        ON bank_transaction.bank_transaction_id = a.bank_transaction_id
+    LEFT JOIN @{XERO_SCHEMA}."CREDIT_NOTE" credit_notes
+        ON credit_notes.credit_note_id = a.credit_note_id
+    LEFT JOIN @{XERO_SCHEMA}."CONTACT" contact
+        ON contact.contact_id =     COALESCE(
+            invoices.contact_id,
+            bank_transaction.contact_id,
+            credit_notes.contact_id
+        ) ;;
+}
+
+
+  dimension: account_code {
+    type: string
+    sql: ${TABLE}."ACCOUNT_CODE" ;;
+  }
+
+  dimension: account_id {
+    type: string
+    sql: ${TABLE}."ACCOUNT_ID" ;;
+  }
+
+  dimension: account_name {
+    type: string
+    sql: ${TABLE}."ACCOUNT_NAME" ;;
+  }
+
+  dimension: account_type {
+    type: string
+    sql: ${TABLE}."ACCOUNT_TYPE" ;;
+  }
+
+  dimension: bank_transaction_id {
+    type: string
+    sql: ${TABLE}."BANK_TRANSACTION_ID" ;;
+  }
+
+  dimension: bank_transfer_id {
+    type: string
+    sql: ${TABLE}."BANK_TRANSFER_ID" ;;
+  }
+
+  dimension: class {
+    type: string
+    sql: ${TABLE}."CLASS" ;;
+  }
+
+  dimension: contact_id {
+    type: string
+    sql: ${TABLE}."CONTACT_ID" ;;
+  }
+
+  dimension: contact_name {
+    type: string
+    sql: ${TABLE}."CONTACT_NAME" ;;
+  }
+
+  dimension_group: created {
+    type: time
+    timeframes: [
+      raw,
+      time,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    sql: CAST(${TABLE}."CREATED_DATE_UTC" AS TIMESTAMP_NTZ) ;;
+  }
+
+  dimension: credit_note_id {
+    type: string
+    sql: ${TABLE}."CREDIT_NOTE_ID" ;;
+  }
+
+  dimension: description {
+    type: string
+    sql: ${TABLE}."DESCRIPTION" ;;
+  }
+
+  dimension: gross_amount_1 {
+    type: number
+    sql: ${TABLE}."GROSS_AMOUNT" ;;
+  }
+
+  dimension: invoice_id {
+    type: string
+    sql: ${TABLE}."INVOICE_ID" ;;
+  }
+
+  dimension_group: journal {
+    type: time
+    timeframes: [
+      raw,
+      date,
+      week,
+      month,
+      quarter,
+      year
+    ]
+    convert_tz: no
+    datatype: date
+    sql: ${TABLE}."JOURNAL_DATE" ;;
+  }
+
+  dimension: journal_id {
+    type: string
+    sql: ${TABLE}."JOURNAL_ID" ;;
+  }
+
+  dimension: journal_line_id {
+    type: string
+    sql: ${TABLE}."JOURNAL_LINE_ID" ;;
+  }
+
+  dimension: journal_number {
+    type: number
+    sql: ${TABLE}."JOURNAL_NUMBER" ;;
+  }
+
+  dimension: manual_journal_id {
+    type: string
+    sql: ${TABLE}."MANUAL_JOURNAL_ID" ;;
+  }
+
+  dimension: net_amount_1 {
+    type: number
+    #hidden: yes
+    sql: ${TABLE}."NET_AMOUNT" ;;
+  }
+
+  dimension: payment_id {
+    type: string
+    sql: ${TABLE}."PAYMENT_ID" ;;
+  }
+
+  dimension: reference {
+    type: string
+    sql: ${TABLE}."REFERENCE" ;;
+  }
+
+  dimension: source_id {
+    type: string
+    sql: ${TABLE}."SOURCE_ID" ;;
+  }
+
+  dimension: source_type {
+    type: string
+    sql: ${TABLE}."SOURCE_TYPE" ;;
+  }
+
+  dimension: tax_amount_1 {
+    type: number
+    sql: ${TABLE}."TAX_AMOUNT" ;;
+  }
+
+  dimension: tax_name {
+    type: string
+    sql: ${TABLE}."TAX_NAME" ;;
+  }
+
+  dimension: tax_type {
+    type: string
+    sql: ${TABLE}."TAX_TYPE" ;;
+  }
+
+  measure: gross_amount {
+    type: number
+    sql: sum(${gross_amount_1}) ;;
+  }
+
+  measure: tax_amount {
+    type: sum
+    sql: ${tax_amount_1} ;;
+  }
+
+  measure: net_amount
+  { type: number
+    sql:sum(${net_amount_1});;
+  }
+
+  measure: net_amount_2 {
+    type: number
+    sql: sum(${net_amount_1}*-1);;
+
+  }
+  measure: count {
+    type: count
+    drill_fields: [contact_name, tax_name, account_name]
+  }
+}

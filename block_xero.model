@@ -1,0 +1,12 @@
+connection: "@{CONNECTION_NAME}"
+
+
+## Include Dashboards
+include: "/dashboards/account_receivable_detail.dashboard"
+include: "/dashboards/xero_dashboard.dashboard"
+
+## Include Explores
+include: "/explores/ar_history.explore"
+include: "/explores/xero_contact.explore"
+include: "/explores/xero_general_ledger.explore"
+include: "/explores/xero_invoice.explore"
